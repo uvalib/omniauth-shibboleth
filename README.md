@@ -6,6 +6,10 @@ An OmniAuth strategy for UVa's Netbadge single sign-on.
   module) to do the heavy lifting.  Therefore this strategy is extremely
   simple, but will only work in a properly configured environment.
 
+## Build this Gem locally
+
+    gem build omniauth-netbadge.gemspec
+
 ## Installation
 
 Add this line to your application's Gemfile:
