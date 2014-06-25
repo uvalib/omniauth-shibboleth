@@ -1,14 +1,14 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'omniauth/netbadge'
+require 'omniauth/shibboleth'
 
 Gem::Specification.new do |spec|
-  spec.name          = "omniauth-netbadge"
-  spec.version       = OmniAuth::Netbadge::VERSION
+  spec.name          = "omniauth-shibboleth"
+  spec.version       = OmniAuth::Shibboleth::VERSION
   spec.authors       = ["Michael Durbin"]
   spec.email         = ["md5wz@virginia.edu"]
-  spec.description   = %q{An omni-auth strategy for UVA's netbadge, requiring the apache pub-cookie plugin.}
+  spec.description   = %q{An omni-auth strategy for UVA's shibboleth implementation, requiring the apache Shibboleth plugin.}
   spec.summary       = %q{}
   spec.homepage      = ""
   spec.license       = "MIT"
