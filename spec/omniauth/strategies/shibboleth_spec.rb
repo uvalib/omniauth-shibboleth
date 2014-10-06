@@ -82,6 +82,10 @@ describe OmniAuth::Strategies::Shibboleth do
       it 'identifes the provider' do
         expect(subject.provider).to eq :shibboleth
       end
+      
+      it 'passes the affiliation' do 
+        expect(subject.extra.affiliations).to eq ["member@virginia.edu"]
+      end
 
     end
 

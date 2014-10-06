@@ -28,7 +28,7 @@ module OmniAuth
         if (request.env && request.env['eppn'])
             @uid = request.env['eppn'];
         elsif (request.env && request.env['affiliation'])
-          request.env['affiliation'].split(/;/).each do | address |
+          parseAffiliations(request.env['affiliation']).each do | address |
               if address.start_with? 'member@'
                 @uid = "User from " + address.split(/@/)[1]
               end
@@ -45,6 +45,16 @@ module OmniAuth
 
       def uid
         @uid
+      end
+      
+      extra do 
+        {
+          :affiliations => parseAffiliations(request.env['affiliation'])
+        }
+      end
+
+      def parseAffiliations(affiliations) 
+         affiliations.split(/;/) unless affiliations.nil?
       end
 
     end
