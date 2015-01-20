@@ -30,11 +30,11 @@ module OmniAuth
         elsif (request.env && request.env['affiliation'])
           parseAffiliations(request.env['affiliation']).each do | address |
               if address.start_with? 'member@'
-                @uid = "User from " + address.split(/@/)[1]
+                @uid = address;
               end
           end
           if (@uid.nil?)
-            @uid = "Unknown User"
+            @uid = "unknown@unknown"
           end
         else
           # this is an error... the apache module and rewrite haven't been properly setup.
