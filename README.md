@@ -13,7 +13,7 @@ An OmniAuth strategy for UVa's Shibboleth multi-institutional single sign-on.
 
 Add this line to your application's Gemfile:
 
-    gem 'omniauth-shibboleth'
+    gem 'omniauth-shibboleth', :github => 'uvalib/omniauth-shibboleth'
 
 And then execute:
 
@@ -21,15 +21,15 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install omniauth-shibboleth
+    $ gem install omniauth-shibboleth -s https://github.com/uvalib/omniauth-shibboleth.git 
 
 ## Usage
 
 1. Configure apache to enable Shibboleth for a single URL.  Select this URL to
    explicitly not conflict with any other paths within your rails application.
-2. Configure your strategy with a :callback_path that points to that Shibboleth
+2. Configure your strategy with a `:callback_path` that points to that Shibboleth
    protected URL
-3. Define a find_for_shibboleth method in your user model that builds an
+3. Define a `find_for_shibboleth method` in your user model that builds an
    appropriate user object corresponding to the information from Shibboleth
 
 ## Implementation details
