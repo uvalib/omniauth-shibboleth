@@ -53,8 +53,10 @@ module OmniAuth
         }
       end
 
-      def parseAffiliations(affiliations) 
-         affiliations.split(/;/) unless affiliations.nil?
+      def parseAffiliations(affiliations)
+         explicit = []
+         explicit = affiliations.split(/;/) unless affiliations.nil?
+         explicit | [ @uid.gsub(/.+@/, "member@") ]
       end
 
     end
