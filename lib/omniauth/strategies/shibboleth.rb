@@ -28,7 +28,7 @@ module OmniAuth
         if (request.env && request.env['eppn'])
             @uid = request.env['eppn'];
         elsif (request.env && request.env['affiliation'])
-          parseAffiliations(request.env['affiliation']).each do | address |
+          parseAffiliationString(request.env['affiliation']).each do | address |
               if address.start_with? 'member@'
                 @uid = address;
               end
@@ -49,14 +49,18 @@ module OmniAuth
       
       extra do 
         {
-          :affiliations => parseAffiliations(request.env['affiliation'])
+          :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations())
         }
       end
 
-      def parseAffiliations(affiliations)
-         explicit = []
-         explicit = affiliations.split(/;/) unless affiliations.nil?
-         explicit | [ @uid.gsub(/.+@/, "member@") ]
+      def parseAffiliationString(affiliation)
+        return [] unless affiliation.respond_to? :split
+         affiliation.split(/;/)
+      end
+
+      def getInferredAffiliations()
+        return [] unless @uid.respond_to? :gsub
+        [ @uid.gsub(/.+@/, "member@") ]
       end
 
     end
