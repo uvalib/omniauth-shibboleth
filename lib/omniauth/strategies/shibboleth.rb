@@ -49,13 +49,18 @@ module OmniAuth
       
       extra do 
         {
-          :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations())
+          :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations() | parseMemberString(request.env['member']))
         }
       end
 
       def parseAffiliationString(affiliation)
         return [] unless affiliation.respond_to? :split
          affiliation.split(/;/)
+      end
+
+      def parseMemberString(members) 
+        return [] unless members.respond_to? :split
+        members.split(/;/)
       end
 
       def getInferredAffiliations()
