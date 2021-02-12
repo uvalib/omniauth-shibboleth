@@ -38,6 +38,8 @@ module OmniAuth
           end
         else
           # this is an error... the apache module and rewrite haven't been properly setup.
+          log :error, "Headers: #{request.env}"
+
           raise MissingHeader.new
         end
         super
@@ -46,8 +48,8 @@ module OmniAuth
       def uid
         @uid
       end
-      
-      extra do 
+
+      extra do
         {
           :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations() | parseMemberString(request.env['member']))
         }
@@ -58,7 +60,7 @@ module OmniAuth
          affiliation.split(/;/)
       end
 
-      def parseMemberString(members) 
+      def parseMemberString(members)
         return [] unless members.respond_to? :split
         members.split(/;/)
       end
