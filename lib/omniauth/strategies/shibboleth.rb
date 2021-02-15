@@ -25,10 +25,10 @@ module OmniAuth
 
       def callback_phase
         log :info, "Shibboleth Callback"
-        if (request.env && request.env['eppn'])
-            @uid = request.env['eppn'];
-        elsif (request.env && request.env['affiliation'])
-          parseAffiliationString(request.env['affiliation']).each do | address |
+        if (request.headers && request.headers['eppn'])
+            @uid = request.headers['eppn'];
+        elsif (request.headers && request.headers['affiliation'])
+          parseAffiliationString(request.headers['affiliation']).each do | address |
               if address.start_with? 'member@'
                 @uid = address;
               end
@@ -38,7 +38,7 @@ module OmniAuth
           end
         else
           # this is an error... the apache module and rewrite haven't been properly setup.
-          log :error, "Headers: #{request.env}"
+          log :error, "Headers: #{request.headers}"
 
           raise MissingHeader.new
         end
@@ -51,7 +51,7 @@ module OmniAuth
 
       extra do
         {
-          :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations() | parseMemberString(request.env['member']))
+          :affiliations => (parseAffiliationString(request.headers['affiliation']) | getInferredAffiliations() | parseMemberString(request.headers['member']))
         }
       end
 
