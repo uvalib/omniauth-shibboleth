@@ -25,10 +25,12 @@ module OmniAuth
 
       def callback_phase
         log :info, "Shibboleth Callback"
-        if (request.headers && request.headers['eppn'])
-            @uid = request.headers['eppn'];
-        elsif (request.headers && request.headers['affiliation'])
-          parseAffiliationString(request.headers['affiliation']).each do | address |
+        eppn = request.headers['HTTP_EPPN']
+        affiliation = request.headers['affiliation']
+        if (eppn)
+            @uid = eppn;
+        elsif (affiliation)
+          parseAffiliationString(affiliation).each do | address |
               if address.start_with? 'member@'
                 @uid = address;
               end
@@ -51,7 +53,7 @@ module OmniAuth
 
       extra do
         {
-          :affiliations => (parseAffiliationString(request.headers['affiliation']) | getInferredAffiliations() | parseMemberString(request.headers['member']))
+          :affiliations => (parseAffiliationString(request.headers['affiliation']) | getInferredAffiliations() | parseMemberString(request.headers['HTTP_MEMBER']))
         }
       end
 
