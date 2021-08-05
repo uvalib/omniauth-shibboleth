@@ -25,8 +25,8 @@ module OmniAuth
 
       def callback_phase
         log :info, "Shibboleth Callback"
-        eppn = request.env['HTTP_EPPN']
-        affiliation = request.env['affiliation']
+        eppn = request.env['HTTP_REMOTE_USER']
+        affiliation = request.env['HTTP_MEMBER']
         if (eppn)
             @uid = eppn;
         elsif (affiliation)
@@ -53,7 +53,7 @@ module OmniAuth
 
       extra do
         {
-          :affiliations => (parseAffiliationString(request.env['affiliation']) | getInferredAffiliations() | parseMemberString(request.env['HTTP_MEMBER']))
+          :affiliations => (parseAffiliationString(request.env['HTTP_MEMBER']) | getInferredAffiliations() | parseMemberString(request.env['HTTP_MEMBER']))
         }
       end
 
