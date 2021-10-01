@@ -25,7 +25,7 @@ module OmniAuth
 
       def callback_phase
         log :info, "Shibboleth Callback env: #{request.env.inspect}"
-        eppn = request.env['HTTP_REMOTE_USER']
+        eppn = request.env['HTTP_EPPN']
         affiliation = request.env['HTTP_MEMBER']
         if (eppn)
             @uid = eppn;
