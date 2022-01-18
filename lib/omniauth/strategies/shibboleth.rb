@@ -27,7 +27,7 @@ module OmniAuth
         log :info, "Shibboleth Callback env: #{request.env.inspect}"
         eppn = request.env['HTTP_EPPN']
         affiliation = request.env['HTTP_AFFILIATION']
-        if (eppn)
+        if (eppn.to_s.include? '@')
             @uid = eppn;
         elsif (affiliation)
           parseAffiliationString(affiliation).each do | address |
