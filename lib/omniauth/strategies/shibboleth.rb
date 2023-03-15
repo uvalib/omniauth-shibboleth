@@ -1,5 +1,4 @@
 require 'omniauth'
-require 'omniauth/strategy'
 
 module OmniAuth
   module Strategies
@@ -24,7 +23,8 @@ module OmniAuth
       end
 
       def callback_phase
-        log :info, "Shibboleth Callback env: #{request.env.inspect}"
+        log :debug, "Shibboleth Callback env: #{request.env.inspect}"
+        raise MissingHeader.new unless request.env
         eppn = request.env['HTTP_EPPN']
         affiliation = request.env['HTTP_AFFILIATION']
         if (eppn.to_s.include? '@')

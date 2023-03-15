@@ -4,46 +4,40 @@ describe OmniAuth::Strategies::Shibboleth do
 
   include Rack::Test::Methods
 
-  let(:shibboleth_provider) { Class.new(OmniAuth::Strategies::Shibboleth) }
-
-  before do
-    stub_const 'ShibbolethProvider', shibboleth_provider
-  end
 
   let(:app) do
-    Rack::Builder.new {
-      use OmniAuth::Test::PhonySession
-      use Shibboleth
-      use ShibbolethProvider, :name => :shibboleth
-      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["OK"]] }
-    }.to_app
+    Rack::Builder.new do |b|
+      b.use OmniAuth::Test::PhonySession
+      b.use OmniAuth::Strategies::Shibboleth
+      OmniAuth.config.request_validation_phase = nil
+      b.run lambda { |_env| [200, {}, ['Not Found']] }
+    end.to_app
+  end
+
+  let(:session) do
+    last_request.env['rack.session']
   end
 
   describe 'callback_phase' do
     it 'should raise error when no headers set by shibboleth' do
-      Shibboleth.eppn nil
-      Shibboleth.affiliation nil
       n = OmniAuth::Strategies::Shibboleth.new(app)
+
       expect {n.callback_phase}.to raise_error OmniAuth::Strategies::Shibboleth::MissingHeader
     end
   end
 
-  describe 'GET /usersauth/shibboleth' do
-    before { get "/users/auth/shibboleth", nil, { } }
-
-    subject { last_response }
-
-    it { should be_redirect }
+  describe 'Request Phase: GET /users/auth/shibboleth' do
 
     it 'should redirect to the configured URL' do
-        expect(subject.headers).to include 'Location' => "/users/auth/shibboleth/callback"
+      post "/users/auth/shibboleth"
+      expect(last_response).to be_redirect
+      expect(last_response.headers).to include 'Location' => "/users/auth/shibboleth/callback"
     end
   end
 
   describe 'GET /users/auth/shibboleth/callback after Shibboleth with eppn' do
     before do
-      Shibboleth.eppn "user"
-      get "/users/auth/shibboleth/callback", nil, { }
+      get "/users/auth/shibboleth/callback", nil, {'HTTP_EPPN' => 'user@example'}
     end
 
     context "request.env['omniauth.auth']" do
@@ -52,11 +46,11 @@ describe OmniAuth::Strategies::Shibboleth do
       it { should be_kind_of Hash }
 
       it 'identifes the user' do
-        expect(subject.uid).to eq "user"
+        expect(subject.uid).to eq "user@example"
       end
 
       it 'identifes the provider' do
-        expect(subject.provider).to eq :shibboleth
+        expect(subject.provider).to eq 'shibboleth'
       end
 
     end
@@ -65,9 +59,7 @@ describe OmniAuth::Strategies::Shibboleth do
 
   describe 'GET /users/auth/shibboleth/callback after Shibboleth with affiliation' do
     before do
-      Shibboleth.eppn nil
-      Shibboleth.affiliation "member@virginia.edu"
-      get "/users/auth/shibboleth/callback", nil, { }
+      get "/users/auth/shibboleth/callback", nil, { 'HTTP_AFFILIATION' => 'member@virginia.edu'}
     end
 
     context "request.env['omniauth.auth']" do
@@ -76,14 +68,14 @@ describe OmniAuth::Strategies::Shibboleth do
       it { should be_kind_of Hash }
 
       it 'identifes the user' do
-        expect(subject.uid).to eq "User from virginia.edu"
+        expect(subject.uid).to eq "member@virginia.edu"
       end
 
       it 'identifes the provider' do
-        expect(subject.provider).to eq :shibboleth
+        expect(subject.provider).to eq 'shibboleth'
       end
-      
-      it 'passes the affiliation' do 
+
+      it 'passes the affiliation' do
         expect(subject.extra.affiliations).to eq ["member@virginia.edu"]
       end
 
@@ -91,32 +83,26 @@ describe OmniAuth::Strategies::Shibboleth do
 
   end
 
+  describe 'GET /users/auth/shibboleth/callback after Shibboleth with affiliation' do
+    before do
+      get "/users/auth/shibboleth/callback", nil, { 'HTTP_EPPN' => 'member@virginia.edu', 'HTTP_MEMBER' => 'member@virginia.edu;staff@virginia.edu'}
+    end
+
+    context "request.env['omniauth.auth']" do
+      subject { last_request.env['omniauth.auth'] }
+
+      it { should be_kind_of Hash }
+
+      it 'identifes the user' do
+        expect(subject.uid).to eq "member@virginia.edu"
+      end
+
+      it 'passes other memberships' do
+        expect(subject.extra.affiliations).to eq ["member@virginia.edu", "staff@virginia.edu"]
+      end
+
+    end
+  end
+
 end
 
-# A simple Rack middleware to optionally insert an eppn and affiliation
-# into the request environment, simulating what the apache Shibboleth
-# module would do.
-class Shibboleth
-
-  @@eppn = nil
-
-  @@affiliation = nil
-
-  def self.eppn (username)
-    @@eppn = username
-  end
-
-  def self.affiliation (affiliation)
-    @@affiliation = affiliation
-  end
-
-  def initialize(app)
-    @app = app
-  end
-
-  def call(env)
-    env["eppn"] = @@eppn unless @@eppn.nil?
-    env["affiliation"] = @@affiliation unless @@affiliation.nil?
-    @app.call(env)
-  end
-end
