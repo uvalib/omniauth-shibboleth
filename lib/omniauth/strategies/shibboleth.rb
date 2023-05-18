@@ -5,8 +5,6 @@ module OmniAuth
     class Shibboleth
       include OmniAuth::Strategy
 
-      class MissingHeader < StandardError; end
-
       # Note, while OmniAuth seems to allow any path to be used here
       # devise does not.  This path should be hijacked by an apache
       # module for shibboleth.
@@ -16,6 +14,8 @@ module OmniAuth
       # devise does not.
       option :request_path, "/users/auth/shibboleth"
 
+      option :fields, %w(cn givenName sn mail physicalDeliveryOffice telephoneNumber)
+
       # The request phase results in a redirect to a path that is configured to be hijacked by
       # mod rewrite and shibboleth apache module.
       def request_phase
@@ -24,7 +24,7 @@ module OmniAuth
 
       def callback_phase
         log :debug, "Shibboleth Callback env: #{request.env.inspect}"
-        raise MissingHeader.new unless request.env
+        raise "Missing header" unless request.env
         eppn = request.env['HTTP_EPPN']
         affiliation = request.env['HTTP_AFFILIATION']
         if (eppn.to_s.include? '@')
@@ -42,13 +42,20 @@ module OmniAuth
           # this is an error... the apache module and rewrite haven't been properly setup.
           log :error, "Headers: #{request.env}"
 
-          raise MissingHeader.new
+          raise "Missing header"
         end
         super
       end
 
       def uid
         @uid
+      end
+
+      def info
+        options.fields.inject({}) do |hash, field|
+          hash[field] = request.env["HTTP_#{field.upcase}"]
+          hash
+        end
       end
 
       extra do
