@@ -37,12 +37,13 @@ module OmniAuth
           end
           if (@uid.nil?)
             @uid = "unknown@unknown"
+            raise "Missing header EPPN"
           end
         else
           # this is an error... the apache module and rewrite haven't been properly setup.
           log :error, "Headers: #{request.env}"
 
-          raise "Missing header"
+          raise "Missing header. Shibboleth likely has not been set up properly"
         end
         super
       end
